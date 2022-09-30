@@ -82,33 +82,55 @@ for kwrg in keywords_list:
 
         driver.get('https://www.pdfdrive.com'+getting_download_pdf_button['href'])
         # wait = WebDriverWait(driver,10)
-        while True:
-            if driver.find_elements(By.CLASS_NAME,"btn-user"):
-                WebDriverWait(driver, 60).until(EC.visibility_of_element_located((By.CLASS_NAME, "btn-user")))
-                print('Abc = ')
-                break
+        # while True:
+        #     if driver.find_elements(By.CLASS_NAME,"btn-user"):
+        #         WebDriverWait(driver, 60).until(EC.visibility_of_element_located((By.CLASS_NAME, "btn-user")))
+        #         print('Abc = ')
+        #         break
 
 
 
         # progressCondition = progress_bar.get_attribute('aria-valuenow')
         # if progressCondition == 100 or progressCondition>100:
         download_file_soup = BeautifulSoup(driver.page_source,'html.parser')
+
+        get_pdf_file_name = download_file_soup.find("div", {"id": "alternatives"})
+        anchor = get_pdf_file_name.find('a', {"class": "btn-user"})
+        anchor_slice = anchor['href'][-3:]
+        print('get_pdf_file_name = ', anchor_slice)
+
         get_pdf_file_name = download_file_soup.find("h1", {"class": "ebook-title"}).text
 
-        get_download_Text = download_file_soup.find('a',{"class":"btn-user"})
+
         if ':' in get_pdf_file_name:
             get_pdf_file_name = get_pdf_file_name.replace(':', '')
         make_file_name = get_pdf_file_name.replace('\n','') +'( PDFDrive ).pdf'
         print('get_download_Text = ',get_download_Text.text)
-        if "Download ( PDF )" in get_download_Text.text :
+        if anchor_slice == 'pdf':
             from requests import get
             file_path = 'D:/InterestBasedDownload/Sports/'
-            reply = get('https://www.pdfdrive.com'+get_download_Text['href'], stream=True)
+            reply = get('https://www.pdfdrive.com'+anchor['href'], stream=True)
             with open(file_path + make_file_name, 'wb') as file:
                 for chunk in reply.iter_content(chunk_size=1024):
                     print('make_file_name = ', make_file_name)
                     if chunk:
                         file.write(chunk)
+        # if anchor_slice == 'pdf':
+        #     from requests import get
+        #
+        #     file_path = 'D:/InterestBasedDownload/Sports/'
+        #     reply = get('https://www.pdfdrive.com' + anchor['href'], stream=True)
+        #     with open(file_path + 'make_file_name', 'wb') as file:
+        #         for chunk in reply.iter_content(chunk_size=1024):
+        #             print('make_file_name = ', 'make_file_name')
+        #             if chunk:
+        #                 file.write(chunk)
+
+            parent = driver.window_handles[0]
+            chld = driver.window_handles[1]
+            driver.close()
+            driver.switch_to.window(parent)
+        else:
             parent = driver.window_handles[0]
             chld = driver.window_handles[1]
             driver.close()
